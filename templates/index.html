@@ -1,0 +1,120 @@
+{% extends "base.html" %}
+
+{% block title %}Analyze Resumes{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="p-5 text-center bg-body-tertiary rounded-3">
+        <h1 class="text-body-emphasis">📄 Resume Shortlister AI</h1>
+        <p class="col-lg-8 mx-auto fs-5 text-muted">
+            Upload multiple resumes and provide a job description below to get an instant AI-powered analysis and candidate ranking.
+        </p>
+    </div>
+
+    <div class="card p-4 mt-4">
+        <form id="upload-form">
+            <div class="mb-3">
+                <label for="job-description" class="form-label fs-5"><b>Job Description</b></label>
+                <textarea class="form-control" name="job-description" id="job-description" rows="8" placeholder="Paste the job description here..." required></textarea>
+            </div>
+            
+            <div class="mb-3">
+                <label for="resume-files" class="form-label fs-5"><b>Select Resumes</b></label>
+                <input type="file" class="form-control" id="resume-files" name="files" required multiple>
+            </div>
+
+            <div class="d-grid gap-2">
+                <button type="submit" class="btn btn-primary btn-lg">Analyze Resumes</button>
+            </div>
+            
+            <div class="mb-3">
+                <label for="positions" class="form-label fs-5"><b>Number of Positions to Fill</b></label>
+                <input type="number" class="form-control" name="positions" id="positions" value="1" min="1" required>
+            </div>
+        </form>
+    </div>
+
+    <div id="spinner" class="d-flex justify-content-center mt-4" style="display: none!important;">
+        <div class="spinner-border" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    </div>
+
+    <div id="results-container" class="mt-4" style="display: none;">
+        <div class="alert alert-success">
+            <h2>Analysis Submitted!</h2>
+            <pre id="json-results" class="mt-3"></pre>
+            <a href="#" id="results-link" class="btn btn-info">View Results</a>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Get references to all the HTML elements we need to interact with
+    const form = document.getElementById('upload-form');
+    const submitButton = form.querySelector('button[type="submit"]');
+    const resultsContainer = document.getElementById('results-container');
+    const jsonResults = document.getElementById('json-results');
+    const resultsLink = document.getElementById('results-link');
+    const spinner = document.getElementById('spinner');
+
+    // Add an event listener to run when the form is submitted
+    form.addEventListener('submit', async (event) => {
+        // Prevent the browser from doing a normal page reload
+        event.preventDefault();
+
+        // --- Show the loading state to the user ---
+        spinner.style.display = 'flex'; // Use flex for Bootstrap 5 spinners
+        resultsContainer.style.display = 'none';
+        submitButton.disabled = true;
+        submitButton.textContent = 'Analyzing...';
+
+        // Get the form data, including the files and job description
+        const formData = new FormData(form);
+
+        try {
+            // Send the data to your backend API in the background
+            const response = await fetch('/upload', { // Make sure this URL matches your Flask route
+                method: 'POST',
+                body: formData,
+            });
+
+            // Get the JSON response from the server
+            const data = await response.json();
+
+            // Make the results container visible
+            resultsContainer.style.display = 'block';
+
+            // --- Check if the server responded with a success or an error ---
+            if (response.ok) {
+                // SUCCESS CASE (e.g., status 200)
+                resultsContainer.querySelector('.alert').className = 'alert alert-success';
+                resultsContainer.querySelector('h2').textContent = 'Analysis Submitted!';
+                jsonResults.textContent = data.message;
+                resultsLink.href = `/job/${data.job_posting_id}`;
+                resultsLink.style.display = 'inline-block';
+            } else {
+                // ERROR CASE (e.g., status 429 when the limit is reached)
+                resultsContainer.querySelector('.alert').className = 'alert alert-danger';
+                resultsContainer.querySelector('h2').textContent = 'An Error Occurred';
+                jsonResults.textContent = data.error; // Display the specific error from the server
+                resultsLink.style.display = 'none'; // Hide the results link
+            }
+
+        } catch (error) {
+            // CATCH UNEXPECTED ERRORS (e.g., network is down)
+            resultsContainer.style.display = 'block';
+            resultsContainer.querySelector('.alert').className = 'alert alert-danger';
+            resultsContainer.querySelector('h2').textContent = 'An Error Occurred';
+            jsonResults.textContent = 'Could not connect to the server. Please try again.';
+            resultsLink.style.display = 'none';
+        } finally {
+            // --- This code runs no matter what (success or error) ---
+            // Hide the loading state and re-enable the button
+            spinner.style.display = 'none';
+            submitButton.disabled = false;
+            submitButton.textContent = 'Analyze Resumes';
+        }
+    });
+</script>
+{% endblock %}

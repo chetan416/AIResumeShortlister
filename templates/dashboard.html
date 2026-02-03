@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>My Job Postings</h1>
+    <a href="{{ url_for('index') }}" class="btn btn-primary">Analyze New Resumes</a>
+</div>
+
+<div class="list-group">
+    {% for job in postings %}
+        <a href="{{ url_for('job_results', job_id=job.id) }}" class="list-group-item list-group-item-action">
+            <div class="d-flex w-100 justify-content-between">
+                <h5 class="mb-1">Job #{{ job.id }}</h5>
+                <small class="text-muted">{{ job.created_at.strftime('%b %d, %Y') }}</small>
+            </div>
+            <p class="mb-1">
+                {{ job.job_description[:150] }}...
+            </p>
+            <small>{{ job.candidates|length }} candidate(s) submitted for analysis.</small>
+        </a>
+    {% else %}
+        <div class="list-group-item">
+            <p class="mb-1">You have not submitted any jobs yet.</p>
+        </div>
+    {% endfor %}
+</div>
+{% endblock %}

@@ -1,0 +1,85 @@
+<!--const container = document.getElementById('candidates-container');
+    const jobId = container.dataset.jobId; -->
+
+<!--<div id="candidates-container" data-job-id="{{ job.id }}">
+</div>-->
+{% extends "base.html" %}
+
+{% block title %}Job Results for #{{ job.id }}{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>Results for Job #{{ job.id }}</h1>
+    <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">Back to Dashboard</a>
+</div>
+
+<div class="card mb-4">
+    <div class="card-header">
+        Job Details
+    </div>
+    <div class="card-body">
+        <h5 class="card-title">Shortlisting for {{ job.positions_to_fill }} Position(s)</h5>
+        <p class="card-text">{{ job.job_description }}</p>
+    </div>
+</div>
+
+<h2>Ranked Candidates</h2>
+<div id="candidates-container" data-job-id="{{ job.id }}" data-positions="{{ job.positions_to_fill }}" class="mt-3">
+    </div>
+
+<script>
+    const container = document.getElementById('candidates-container');
+    const positionsToFill = parseInt(container.dataset.positions);
+    const jobId = container.dataset.jobId; // Updated to use dataset
+
+    // This function will fetch and display the results
+    function fetchAndDisplayResults() {
+        fetch(`/api/job/${jobId}/results`)
+            .then(response => response.json())
+            .then(candidates => {
+                // Check if the first candidate has a score greater than 0.
+                // This is how we know the analysis is likely done.
+                const isProcessing = candidates.length === 0 || candidates[0].score === 0;
+
+                container.innerHTML = ''; // Clear previous content
+
+                if (isProcessing) {
+                    container.innerHTML = '<div class="alert alert-info">Analysis in progress... The results will appear here automatically in a few moments.</div>';
+                    // If still processing, wait 3 seconds and try again.
+                    setTimeout(fetchAndDisplayResults, 3000);
+                } else {
+                    // If processing is done, display the results.
+                    candidates.forEach((candidate, index) => {
+                        const card = document.createElement('div');
+                        card.className = 'card mb-3';
+                        
+                        let scoreClass = candidate.score > 75 ? 'bg-success' : (candidate.score > 50 ? 'bg-warning text-dark' : 'bg-danger');
+                        
+                        let shortlistBadge = '';
+                        if (index < positionsToFill) {
+                            card.classList.add('border-primary', 'border-2');
+                            shortlistBadge = '<span class="badge bg-primary ms-2">Shortlisted</span>';
+                        }
+
+                        card.innerHTML = `
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <div>
+                                    <strong>${candidate.filename}</strong>
+                                    ${shortlistBadge}
+                                </div>
+                                <span class="badge ${scoreClass}">${candidate.score}</span>
+                            </div>
+                            <div class="card-body">
+                                <p class="card-text">${candidate.reasoning || 'No reasoning provided.'}</p>
+                            </div>
+                        `;
+                        container.appendChild(card);
+                    });
+                }
+            });
+    }
+
+    // Start the process when the page loads
+    document.addEventListener('DOMContentLoaded', fetchAndDisplayResults);
+</script>
+{% endblock %}

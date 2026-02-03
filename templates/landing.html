@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+
+{% block title %}Welcome to Resume AI{% endblock %}
+
+{% block content %}
+<div class="px-4 py-5 my-5 text-center">
+    <h1 class="display-5 fw-bold text-body-emphasis">Shortlist Candidates in Seconds</h1>
+    <div class="col-lg-6 mx-auto">
+        <p class="lead mb-4">Stop wasting hours sifting through resumes. Our AI-powered tool analyzes and ranks candidates based on your job description, so you can focus on hiring the best talent.</p>
+        <div class="d-grid gap-2 d-sm-flex justify-content-sm-center">
+            <a href="{{ url_for('register') }}" class="btn btn-primary btn-lg px-4 gap-3">Get Started for Free</a>
+        </div>
+    </div>
+</div>
+
+<div class="container px-4 py-5" id="custom-cards">
+    <h2 class="pb-2 border-bottom text-center">Our Plans</h2>
+    <div class="row row-cols-1 row-cols-lg-3 align-items-stretch g-4 py-5">
+        
+        <div class="col">
+            <div class="card card-cover h-100 overflow-hidden text-bg-light rounded-4 shadow-sm">
+                <div class="card-body p-5">
+                    <h3 class="pt-5 mt-5 mb-4 display-6 lh-1 fw-bold">Standard</h3>
+                    <p class="fs-2 fw-bold">₹0 <span class="text-muted fw-normal">/ monthly</span></p>
+                    <ul class="list-unstyled mt-3 mb-4">
+                        <li>5 Resume Uploads per Day</li>
+                        <li>Single File Uploads</li>
+                        <li>Basic AI Analysis</li>
+                    </ul>
+                    <a href="{{ url_for('register') }}" class="btn btn-lg btn-outline-secondary">Sign up for free</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col">
+            <div class="card card-cover h-100 overflow-hidden text-bg-primary rounded-4 shadow-lg">
+                <div class="card-body p-5 text-white">
+                    <h3 class="pt-5 mt-5 mb-4 display-6 lh-1 fw-bold">Pro</h3>
+                    <p class="fs-2 fw-bold">₹99 <span class="fs-2 fw-normal">/ monthly</span></p>
+                    <ul class="list-unstyled mt-3 mb-4">
+                        <li>50 Resume Uploads per Day</li>
+                        <li>Bulk Resume Uploads</li>
+                        <li>Advanced AI Ranking</li>
+                    </ul>
+                    <a href="{{ url_for('create_checkout_session', plan='pro') }}" class="btn btn-lg btn-light">Get started</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col">
+            <div class="card card-cover h-100 overflow-hidden text-bg-dark rounded-4 shadow-sm">
+                <div class="card-body p-5 text-white">
+                    <h3 class="pt-5 mt-5 mb-4 display-6 lh-1 fw-bold">Premium</h3>
+                    <p class="fs-2 fw-bold">₹1000 <span class="fs-2 fw-normal">/ yearly</span></p>
+                    <ul class="list-unstyled mt-3 mb-4">
+                        <li>Unlimited Resume Uploads</li>
+                        <li>Bulk Resume Uploads</li>
+                        <li>Advanced AI Ranking</li>
+                    </ul>
+                    <a href="{{ url_for('create_checkout_session', plan='premium') }}" class="btn btn-lg btn-outline-light">Get started</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
