@@ -6,7 +6,7 @@ services:
     name: resume-shortlister-web
     env: python
     buildCommand: "pip install -r requirements.txt && flask db upgrade"
-    startCommand: "gunicorn wsgi:app"
+    startCommand: "gunicorn wsgi:app --bind 0.0.0.0:$PORT"
     envVars:
       - key: PYTHON_VERSION
         value: 3.10.13
