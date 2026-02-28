@@ -1,0 +1,59 @@
+services:
+  # --------------------------------------------------------------------------
+  # WEB SERVICE
+  # --------------------------------------------------------------------------
+  - type: web
+    name: resume-shortlister-web
+    env: python
+    buildCommand: "pip install -r requirements.txt && flask db upgrade"
+    startCommand: "gunicorn app:app"
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.9.0
+      - key: DATABASE_URL
+        fromDatabase:
+          name: resume-db
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: resume-redis
+          property: connectionString
+      - key: GOOGLE_API_KEY
+        sync: false
+      - key: STRIPE_SECRET_KEY
+        sync: false
+      - key: SECRET_KEY
+        generateValue: true
+
+  # --------------------------------------------------------------------------
+  # BACKGROUND WORKER
+  # --------------------------------------------------------------------------
+  - type: worker
+    name: resume-shortlister-worker
+    env: python
+    buildCommand: "pip install -r requirements.txt"
+    startCommand: "rq worker resume-analyzer"
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.9.0
+      - key: DATABASE_URL
+        fromDatabase:
+          name: resume-db
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: resume-redis
+          property: connectionString
+      - key: GOOGLE_API_KEY
+        sync: false
+
+databases:
+  - name: resume-db
+    plan: free
+
+  - type: redis
+    name: resume-redis
+    ipAllowList: []
+    plan: free

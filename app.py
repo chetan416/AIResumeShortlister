@@ -20,16 +20,23 @@ migrate = Migrate()
 
 
 # --- 2. HELPER & AI FUNCTIONS ---
-def extract_text_from_file(file_path):
-    """Extracts text from PDF or DOCX files."""
-    if file_path.endswith('.pdf'):
-        reader = PdfReader(file_path)
+from io import BytesIO
+
+def extract_text_from_file(file_obj, filename):
+    """Extracts text from PDF or DOCX file-like objects."""
+    if filename.endswith('.pdf'):
+        # PdfReader can take a file-like object directly
+        reader = PdfReader(file_obj)
         text = ""
         for page in reader.pages:
             text += page.extract_text() or ""
         return text
-    elif file_path.endswith('.docx'):
-        doc = docx.Document(file_path)
+    elif filename.endswith('.docx'):
+        # docx needs a stream/BytesIO object
+        # werkzeug FileStorage objects are already streams, but wrapping it
+        # ensures compatibility with python-docx
+        file_stream = BytesIO(file_obj.read())
+        doc = docx.Document(file_stream)
         text = "\n".join([para.text for para in doc.paragraphs])
         return text
     else:
@@ -213,9 +220,7 @@ def create_app():
                 # Create Candidate records
                 for file in files:
                     if file and file.filename != '':
-                        filepath = os.path.join(app.config['UPLOAD_FOLDER'], file.filename)
-                        file.save(filepath)
-                        extracted_text = extract_text_from_file(filepath)
+                        extracted_text = extract_text_from_file(file, file.filename)
                         new_candidate = Candidate(
                             original_filename=file.filename,
                             extracted_text=extracted_text,
