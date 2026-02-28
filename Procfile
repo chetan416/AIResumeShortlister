@@ -1,2 +1,2 @@
-web: gunicorn app:app
+web: gunicorn wsgi:app
 worker: rq worker resume-analyzer
